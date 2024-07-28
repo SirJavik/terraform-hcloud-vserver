@@ -21,14 +21,16 @@
 resource "hcloud_server" "vserver" {
   count = var.service_count
 
-  name = (var.environment == "live" ? format("%s-%s.%s",
-    "${var.name_prefix}" + (var.add_index == true ? "${count.index + 1}"  : ""),
+  name = (var.environment == "live" ? format("%s%s-%s.%s",
+    "${var.name_prefix}",
+    (var.add_index == true ? "${count.index + 1}" : ""),
     (count.index % 2 == 0 ? var.locations[0] : var.locations[1]),
     var.domain,
 
-    ) : format("%s-%s-%s.%s",
+    ) : format("%s-%s%s-%s.%s",
     var.environment,
-    "${var.name_prefix}" + (var.add_index == true ? "${count.index + 1}"  : ""),
+    "${var.name_prefix}",
+    (var.add_index == true ? "${count.index + 1}" : ""),
     (count.index % 2 == 0 ? var.locations[0] : var.locations[1]),
     var.domain
   ))
@@ -39,7 +41,7 @@ resource "hcloud_server" "vserver" {
   server_type = var.type
   location    = (count.index % 2 == 0 ? var.locations[0] : var.locations[1])
   ssh_keys    = var.ssh_key_ids
-  user_data   = file(var.cloud_init)
+  user_data   = file("${path.module}/cloud-init.yml")
 
   public_net {
     ipv4 = hcloud_primary_ip.ipv4[count.index].id
