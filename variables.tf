@@ -22,6 +22,7 @@
 variable "environment" {
   description = "The environment of the vserver"
   type        = string
+  default     = "live"
 }
 
 variable "service_count" {
@@ -61,7 +62,7 @@ variable "locations" {
 variable "name_prefix" {
   description = "The name prefix of the vserver"
   type        = string
-  default     = "webstorage"
+  default     = "vserver"
 }
 
 variable "datacenters" {
@@ -78,12 +79,12 @@ variable "network_id" {
 variable "labels" {
   description = "The labels of the vserver"
   type        = map(string)
+  default     = {}
 }
 
 variable "subnet" {
   description = "The subnet of the vserver"
   type        = string
-  default     = "10.0.20.0/24"
 }
 
 variable "volumes" {
