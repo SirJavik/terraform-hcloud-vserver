@@ -22,13 +22,13 @@ resource "hcloud_server" "vserver" {
   count = var.service_count
 
   name = (var.environment == "live" ? format("%s-%s.%s",
-    "${var.name_prefix}" + (var.add_index ? count.index + 1 : ""),
+    "${var.name_prefix}" + (var.add_index == true ? "${count.index + 1}"  : ""),
     (count.index % 2 == 0 ? var.locations[0] : var.locations[1]),
     var.domain,
 
     ) : format("%s-%s-%s.%s",
     var.environment,
-    "${var.name_prefix}" + (var.add_index ? count.index + 1 : ""),
+    "${var.name_prefix}" + (var.add_index == true ? "${count.index + 1}"  : ""),
     (count.index % 2 == 0 ? var.locations[0] : var.locations[1]),
     var.domain
   ))
