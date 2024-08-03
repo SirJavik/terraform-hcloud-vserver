@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.4.0
+# Version: 1.4.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.4.1 - Use floating ip maps  
 # 1.4.0 - Split ip creation
 # 1.3.3 - Fix wrong ip address
 # 1.3.2 - Fix wrong variable
@@ -78,7 +79,7 @@ resource "terraform_data" "floating_ipv6s_domain" {
 ###################
 
 resource "hcloud_floating_ip" "floating_ipv4" {
-  for_each = local.floating_ipv4_list
+  for_each = local.floating_ipv4_map
 
   name = format("%s-%s",
     each.key,
@@ -91,7 +92,7 @@ resource "hcloud_floating_ip" "floating_ipv4" {
 }
 
 resource "hcloud_floating_ip" "floating_ipv6" {
-  for_each = local.floating_ipv4_list
+  for_each = local.floating_ipv6_map
 
   name = format("%s-%s",
     each.key,
