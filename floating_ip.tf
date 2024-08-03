@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.4.3
+# Version: 1.5.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.5.0 - Add labels
 # 1.4.3 - Use local.hcloud_floating_ips
 # 1.4.2 - Use map for rdns
 # 1.4.1 - Use floating ip maps  
@@ -91,6 +92,12 @@ resource "hcloud_floating_ip" "floating_ipv4" {
   type          = each.value.type
   description   = each.value.description
   home_location = each.value.location
+
+  labels = {
+    environment = var.environment,
+    domain      = each.value.dns[0]
+    managed_by  = "terraform",
+  }
 }
 
 resource "hcloud_floating_ip" "floating_ipv6" {
@@ -104,6 +111,12 @@ resource "hcloud_floating_ip" "floating_ipv6" {
   type          = each.value.type
   description   = each.value.description
   home_location = each.value.location
+
+  labels = {
+    environment = var.environment,
+    domain      = each.value.dns[0]
+    managed_by  = "terraform",
+  }
 }
 
 ###################
