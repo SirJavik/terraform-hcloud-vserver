@@ -10,7 +10,7 @@
 
 # Filename: locals.tf
 # Description: 
-# Version: 1.7.1
+# Version: 1.7.2
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
 # Last Modified: 2024-08-03
@@ -68,6 +68,15 @@ locals {
   floating_ipv6_map = {
     for key, value in var.floating_ips : key => value if lower(value.type) == "ipv6"
   }
+
+  hcloud_floating_ipv4 = flatten(tolist([
+    for floating_ip in hcloud_floating_ip.floating_ipv4 : floating_ip
+  ]))
+
+  hcloud_floating_ipv6 = flatten(tolist([
+    for floating_ip in hcloud_floating_ip.floating_ipv6 : floating_ip
+  ]))
+
 
   floating_ipv4_list = [
     for floating_ip in var.floating_ips : {
