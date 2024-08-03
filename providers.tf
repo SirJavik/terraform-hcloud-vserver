@@ -18,9 +18,6 @@
 # 1.0.0 - Initial version
 
 terraform {
-  backend "http" {
-  }
-
   required_providers {
     hcloud = {
       source  = "hetznercloud/hcloud"
