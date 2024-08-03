@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.4.1
+# Version: 1.4.2
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.4.2 - Use map for rdns
 # 1.4.1 - Use floating ip maps  
 # 1.4.0 - Split ip creation
 # 1.3.3 - Fix wrong ip address
@@ -109,7 +110,7 @@ resource "hcloud_floating_ip" "floating_ipv6" {
 ###################
 
 resource "hcloud_rdns" "floating_ipv4_rdns" {
-  for_each = local.floating_ipv4_list
+  for_each = local.floating_ipv4_map
 
   floating_ip_id = hcloud_floating_ip.floating_ipv4[each.key].id
   ip_address     = (each.value.type == "ipv4" ? hcloud_floating_ip.floating_ipv4[each.key].ip_address : "${hcloud_floating_ip.floating_ipv4[each.key].ip_address}1")
@@ -117,7 +118,7 @@ resource "hcloud_rdns" "floating_ipv4_rdns" {
 }
 
 resource "hcloud_rdns" "floating_ipv6_rdns" {
-  for_each = local.floating_ipv6_list
+  for_each = local.floating_ipv6_map
 
   floating_ip_id = hcloud_floating_ip.floating_ipv6[each.key].id
   ip_address     = (each.value.type == "ipv4" ? hcloud_floating_ip.floating_ipv6[each.key].ip_address : "${hcloud_floating_ip.floating_ipv6[each.key].ip_address}1")
