@@ -10,13 +10,14 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.1
+# Version: 1.2.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
-# Last Modified: 2024-06-12
+# Last Modified: 2024-08-03
 # Changelog: 
-# 1.1 - Mutli dns support
-# 1.0 - Initial version 
+# 1.2.0 - Split ipv4 and ipv6
+# 1.1.0 - Mutli dns support
+# 1.0.0 - Initial version 
 
 ###################
 ###    Split    ###

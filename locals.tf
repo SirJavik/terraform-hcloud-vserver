@@ -10,15 +10,17 @@
 
 # Filename: locals.tf
 # Description: 
-# Version: 1.3
+# Version: 1.4.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
-# Last Modified: 2024-06-12
+# Last Modified: 2024-08-03
 # Changelog: 
-# 1.3 - Add locals for floating ip dns
-# 1.2 - Removed floating_ips variable
-# 1.1 - Added floating_ips variable
-# 1.0 - Initial version 
+# 1.4.1 - Fix floating ip dns
+# 1.4.0 - Add floating_ipv4_list and floating_ipv6_list
+# 1.3.0 - Add locals for floating ip dns
+# 1.2.0 - Removed floating_ips variable
+# 1.1.0 - Added floating_ips variable
+# 1.0.0 - Initial version 
 
 locals {
   server = {
@@ -58,7 +60,7 @@ locals {
   floating_ipv4_list = [
     for floating_ip in var.floating_ips : {
       type        = lower(floating_ip.type)
-      dns         = lower(floating_ip.dns)
+      dns         = floating_ip.dns
       description = try(floating_ip.description, "")
       location    = lower(floating_ip.location)
       proxy       = try(floating_ip.proxy, false)
@@ -68,7 +70,7 @@ locals {
   floating_ipv6_list = [
     for floating_ip in var.floating_ips : {
       type        = lower(floating_ip.type)
-      dns         = lower(floating_ip.dns)
+      dns         = floating_ip.dns
       description = try(floating_ip.description, "")
       location    = lower(floating_ip.location)
       proxy       = try(floating_ip.proxy, false)
