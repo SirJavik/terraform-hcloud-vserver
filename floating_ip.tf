@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.3.1
+# Version: 1.3.2
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.3.2 - Fix wrong variable
 # 1.3.1 - Fix floating ip dns
 # 1.2.1 - Fix wrong index
 # 1.2.0 - Split ipv4 and ipv6
@@ -107,7 +108,7 @@ resource "cloudflare_record" "floating_ipv4_dns" {
   count = length(local.floating_ipv4_list) * length(local.floating_ipv4_dns)
 
   zone_id = var.cloudflare_zones[
-    terraform_data.floating_ips_domain[
+    terraform_data.floating_ipv4s_domain[
       local.floating_ipv4_dns[
         count.index % length(local.floating_ipv4_dns)
       ]
@@ -125,7 +126,7 @@ resource "cloudflare_record" "floating_ipv6_dns" {
   count = length(local.floating_ipv6_list) * length(local.floating_ipv6_dns)
 
   zone_id = var.cloudflare_zones[
-    terraform_data.floating_ips_domain[
+    terraform_data.floating_ipv6s_domain[
       local.floating_ipv6_dns[
         count.index % length(local.floating_ipv6_dns)
       ]
