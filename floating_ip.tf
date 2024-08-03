@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.2.1
+# Version: 1.3.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.3.1 - Fix floating ip dns
 # 1.2.1 - Fix wrong index
 # 1.2.0 - Split ipv4 and ipv6
 # 1.1.0 - Mutli dns support
@@ -24,8 +25,16 @@
 ###    Split    ###
 ###################
 
-resource "terraform_data" "floating_ips_split" {
-  for_each = toset(local.floating_ip_dns)
+resource "terraform_data" "floating_ipv4s_split" {
+  for_each = toset(local.floating_ipv4_dns)
+
+  triggers_replace = {
+    parts = split(".", each.value)
+  }
+}
+
+resource "terraform_data" "floating_ipv6s_split" {
+  for_each = toset(local.floating_ipv6_dns)
 
   triggers_replace = {
     parts = split(".", each.value)
@@ -36,15 +45,27 @@ resource "terraform_data" "floating_ips_split" {
 ###    Domain   ###
 ###################
 
-resource "terraform_data" "floating_ips_domain" {
-  for_each = toset(local.floating_ip_dns)
+resource "terraform_data" "floating_ipv4s_domain" {
+  for_each = toset(local.floating_ipv4_dns)
 
   triggers_replace = {
     fqdn            = each.value
-    tld             = try(element(terraform_data.floating_ips_split[each.key].triggers_replace.parts, length(terraform_data.floating_ips_split[each.key].triggers_replace.parts) - 1), null)
-    domain          = try(element(terraform_data.floating_ips_split[each.key].triggers_replace.parts, length(terraform_data.floating_ips_split[each.key].triggers_replace.parts) - 2), null)
-    subdomain       = try(element(terraform_data.floating_ips_split[each.key].triggers_replace.parts, length(terraform_data.floating_ips_split[each.key].triggers_replace.parts) - 3), null)
-    domain_with_tld = try(join(".", [element(terraform_data.floating_ips_split[each.key].triggers_replace.parts, length(terraform_data.floating_ips_split[each.key].triggers_replace.parts) - 2), element(terraform_data.floating_ips_split[each.key].triggers_replace.parts, length(terraform_data.floating_ips_split[each.key].triggers_replace.parts) - 1)]), null)
+    tld             = try(element(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts) - 1), null)
+    domain          = try(element(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts) - 2), null)
+    subdomain       = try(element(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts) - 3), null)
+    domain_with_tld = try(join(".", [element(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts) - 2), element(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv4s_split[each.key].triggers_replace.parts) - 1)]), null)
+  }
+}
+
+resource "terraform_data" "floating_ipv6s_domain" {
+  for_each = toset(local.floating_ipv6_dns)
+
+  triggers_replace = {
+    fqdn            = each.value
+    tld             = try(element(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts) - 1), null)
+    domain          = try(element(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts) - 2), null)
+    subdomain       = try(element(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts) - 3), null)
+    domain_with_tld = try(join(".", [element(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts) - 2), element(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts, length(terraform_data.floating_ipv6s_split[each.key].triggers_replace.parts) - 1)]), null)
   }
 }
 
@@ -83,16 +104,16 @@ resource "hcloud_rdns" "floating_ip_rdns" {
 ###################
 
 resource "cloudflare_record" "floating_ipv4_dns" {
-  count = length(local.floating_ipv4_list) * length(local.floating_ip_dns)
+  count = length(local.floating_ipv4_list) * length(local.floating_ipv4_dns)
 
   zone_id = var.cloudflare_zones[
     terraform_data.floating_ips_domain[
-      local.floating_ip_dns[
-        count.index % length(local.floating_ip_dns)
+      local.floating_ipv4_dns[
+        count.index % length(local.floating_ipv4_dns)
       ]
     ].triggers_replace.domain_with_tld
   ]
-  name    = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].dns[count.index % length(local.floating_ip_dns)]
+  name    = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].dns[count.index % length(local.floating_ipv4_dns)]
   value   = local.hcloud_floating_ip[count.index % length(local.floating_ipv4_list)].ip_address
   type    = "A"
   ttl     = (local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
@@ -101,20 +122,19 @@ resource "cloudflare_record" "floating_ipv4_dns" {
 }
 
 resource "cloudflare_record" "floating_ipv6_dns" {
-  count = length(local.floating_ipv6_list) * length(local.floating_ip_dns)
+  count = length(local.floating_ipv6_list) * length(local.floating_ipv6_dns)
 
   zone_id = var.cloudflare_zones[
     terraform_data.floating_ips_domain[
-      local.floating_ip_dns[
-        count.index % length(local.floating_ip_dns)
+      local.floating_ipv6_dns[
+        count.index % length(local.floating_ipv6_dns)
       ]
     ].triggers_replace.domain_with_tld
   ]
-  name    = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].dns[count.index % length(local.floating_ip_dns)]
+  name    = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].dns[count.index % length(local.floating_ipv6_dns)]
   value   = "${local.hcloud_floating_ip[count.index % length(local.floating_ipv6_list)].ip_address}1"
   type    = "AAAA"
   ttl     = (local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy
   comment = "Managed by Terraform"
-
 }

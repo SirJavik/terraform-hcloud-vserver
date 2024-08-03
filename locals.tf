@@ -10,11 +10,12 @@
 
 # Filename: locals.tf
 # Description: 
-# Version: 1.4.1
+# Version: 1.5.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.5.1 - Add floating_ipv4_dns and floating_ipv6_dns
 # 1.4.1 - Fix floating ip dns
 # 1.4.0 - Add floating_ipv4_list and floating_ipv6_list
 # 1.3.0 - Add locals for floating ip dns
@@ -49,8 +50,12 @@ locals {
   labels = merge({ environment = var.environment }, var.labels)
   module = basename(abspath(path.module))
 
-  floating_ip_dns = distinct(flatten(tolist([
-    for floating_ip in var.floating_ips : [for dns in floating_ip.dns : dns]
+  floating_ipv4_dns = distinct(flatten(tolist([
+    for floating_ip in var.floating_ips : [for dns in floating_ip.dns : dns] if lower(floating_ip.type) == "ipv4"
+  ])))
+
+  floating_ipv6_dns = distinct(flatten(tolist([
+    for floating_ip in var.floating_ips : [for dns in floating_ip.dns : dns] if lower(floating_ip.type) == "ipv6"
   ])))
 
   hcloud_floating_ip = flatten(tolist([
