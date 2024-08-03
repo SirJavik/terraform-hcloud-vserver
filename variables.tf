@@ -100,7 +100,7 @@ variable "floating_ips" {
   description = "The floating IPs of the vserver"
   type = map(object({
     type        = string
-    dns         = list(string)
+    dns         = optional(list(string), [])
     description = optional(string, "")
     location    = string
     proxy       = optional(bool, false)

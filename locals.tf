@@ -55,14 +55,24 @@ locals {
     for floating_ip in hcloud_floating_ip.floating_ip : floating_ip
   ]))
 
-  floating_ip_list = [
+  floating_ipv4_list = [
     for floating_ip in var.floating_ips : {
-      type        = floating_ip.type
-      dns         = floating_ip.dns
-      description = floating_ip.description
-      location    = floating_ip.location
-      proxy       = floating_ip.proxy
-    }
+      type        = lower(floating_ip.type)
+      dns         = lower(floating_ip.dns)
+      description = try(floating_ip.description, "")
+      location    = lower(floating_ip.location)
+      proxy       = try(floating_ip.proxy, false)
+    } if lower(floating_ip.type) == "ipv4"
+  ]
+
+  floating_ipv6_list = [
+    for floating_ip in var.floating_ips : {
+      type        = lower(floating_ip.type)
+      dns         = lower(floating_ip.dns)
+      description = try(floating_ip.description, "")
+      location    = lower(floating_ip.location)
+      proxy       = try(floating_ip.proxy, false)
+    } if lower(floating_ip.type) == "ipv6"
   ]
 
   cloudflare_zone_list = [

@@ -80,8 +80,8 @@ resource "hcloud_rdns" "floating_ip_rdns" {
 ###     DNS     ###
 ###################
 
-resource "cloudflare_record" "floating_ip_dns" {
-  count = length(local.floating_ip_list) * length(local.floating_ip_dns)
+resource "cloudflare_record" "floating_ipv4_dns" {
+  count = length(local.floating_ipv4_list) * length(local.floating_ip_dns)
 
   zone_id = var.cloudflare_zones[
     terraform_data.floating_ips_domain[
@@ -90,10 +90,29 @@ resource "cloudflare_record" "floating_ip_dns" {
       ]
     ].triggers_replace.domain_with_tld
   ]
-  name    = local.floating_ip_list[count.index % length(local.floating_ip_list)].dns[count.index % length(local.floating_ip_dns)]
-  value   = (local.floating_ip_list[count.index % length(local.floating_ip_list)].type == "ipv4" ? local.hcloud_floating_ip[count.index % length(local.floating_ip_list)].ip_address : "${local.hcloud_floating_ip[count.index % length(local.floating_ip_list)].ip_address}1")
-  type    = (local.floating_ip_list[count.index % length(local.floating_ip_list)].type == "ipv4" ? "A" : "AAAA")
-  ttl     = (local.floating_ip_list[count.index % length(local.floating_ip_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
-  proxied = local.floating_ip_list[count.index % length(local.floating_ip_list)].proxy
+  name    = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].dns[count.index % length(local.floating_ip_dns)]
+  value   = hcloud_floating_ip.floating_ip[count.index % length(hcloud_floating_ip.floating_ip)].ip_address
+  type    = "A"
+  ttl     = (local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
+  proxied = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy
   comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "floating_ipv6_dns" {
+  count = length(local.floating_ipv6_list) * length(local.floating_ip_dns)
+
+  zone_id = var.cloudflare_zones[
+    terraform_data.floating_ips_domain[
+      local.floating_ip_dns[
+        count.index % length(local.floating_ip_dns)
+      ]
+    ].triggers_replace.domain_with_tld
+  ]
+  name    = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].dns[count.index % length(local.floating_ip_dns)]
+  value   = "${hcloud_floating_ip.floating_ip[count.index % length(hcloud_floating_ip.floating_ip)].ip_address}1"
+  type    = "AAAA"
+  ttl     = (local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
+  proxied = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy
+  comment = "Managed by Terraform"
+
 }
