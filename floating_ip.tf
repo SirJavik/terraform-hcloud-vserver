@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.3.3
+# Version: 1.4.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.4.0 - Split ip creation
 # 1.3.3 - Fix wrong ip address
 # 1.3.2 - Fix wrong variable
 # 1.3.1 - Fix floating ip dns
@@ -76,8 +77,21 @@ resource "terraform_data" "floating_ipv6s_domain" {
 ### Floating IP ###
 ###################
 
-resource "hcloud_floating_ip" "floating_ip" {
-  for_each = var.floating_ips
+resource "hcloud_floating_ip" "floating_ipv4" {
+  for_each = local.floating_ipv4_list
+
+  name = format("%s-%s",
+    each.key,
+    each.value.type,
+  )
+
+  type          = each.value.type
+  description   = each.value.description
+  home_location = each.value.location
+}
+
+resource "hcloud_floating_ip" "floating_ipv6" {
+  for_each = local.floating_ipv4_list
 
   name = format("%s-%s",
     each.key,
@@ -93,11 +107,19 @@ resource "hcloud_floating_ip" "floating_ip" {
 ###    rDNS     ###
 ###################
 
-resource "hcloud_rdns" "floating_ip_rdns" {
-  for_each = var.floating_ips
+resource "hcloud_rdns" "floating_ipv4_rdns" {
+  for_each = local.floating_ipv4_list
 
-  floating_ip_id = hcloud_floating_ip.floating_ip[each.key].id
-  ip_address     = (each.value.type == "ipv4" ? hcloud_floating_ip.floating_ip[each.key].ip_address : "${hcloud_floating_ip.floating_ip[each.key].ip_address}1")
+  floating_ip_id = hcloud_floating_ip.floating_ipv4[each.key].id
+  ip_address     = (each.value.type == "ipv4" ? hcloud_floating_ip.floating_ipv4[each.key].ip_address : "${hcloud_floating_ip.floating_ipv4[each.key].ip_address}1")
+  dns_ptr        = each.value.dns[0]
+}
+
+resource "hcloud_rdns" "floating_ipv6_rdns" {
+  for_each = local.floating_ipv6_list
+
+  floating_ip_id = hcloud_floating_ip.floating_ipv6[each.key].id
+  ip_address     = (each.value.type == "ipv4" ? hcloud_floating_ip.floating_ipv6[each.key].ip_address : "${hcloud_floating_ip.floating_ipv6[each.key].ip_address}1")
   dns_ptr        = each.value.dns[0]
 }
 
@@ -116,7 +138,7 @@ resource "cloudflare_record" "floating_ipv4_dns" {
     ].triggers_replace.domain_with_tld
   ]
   name    = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].dns[count.index % length(local.floating_ipv4_dns)]
-  value   = local.hcloud_floating_ip[count.index % (length(local.floating_ipv6_list) + length(local.floating_ipv4_list))].ip_address
+  value   = hcloud_floating_ip.floating_ipv4[count.index % length(local.floating_ipv6_list)].ip_address
   type    = "A"
   ttl     = (local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy
@@ -134,7 +156,7 @@ resource "cloudflare_record" "floating_ipv6_dns" {
     ].triggers_replace.domain_with_tld
   ]
   name    = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].dns[count.index % length(local.floating_ipv6_dns)]
-  value   = "${local.hcloud_floating_ip[count.index % (length(local.floating_ipv6_list) + length(local.floating_ipv4_list))].ip_address}1"
+  value   = "${hcloud_floating_ip.floating_ipv6[count.index % length(local.floating_ipv6_list)].ip_address}1"
   type    = "AAAA"
   ttl     = (local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy
