@@ -10,11 +10,12 @@
 
 # Filename: floating_ip.tf
 # Description: 
-# Version: 1.2.0
+# Version: 1.2.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-06-08
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.2.1 - Fix wrong index
 # 1.2.0 - Split ipv4 and ipv6
 # 1.1.0 - Mutli dns support
 # 1.0.0 - Initial version 
@@ -92,7 +93,7 @@ resource "cloudflare_record" "floating_ipv4_dns" {
     ].triggers_replace.domain_with_tld
   ]
   name    = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].dns[count.index % length(local.floating_ip_dns)]
-  value   = hcloud_floating_ip.floating_ip[count.index % length(hcloud_floating_ip.floating_ip)].ip_address
+  value   = local.hcloud_floating_ip[count.index % length(local.floating_ipv4_list)].ip_address
   type    = "A"
   ttl     = (local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy
@@ -110,7 +111,7 @@ resource "cloudflare_record" "floating_ipv6_dns" {
     ].triggers_replace.domain_with_tld
   ]
   name    = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].dns[count.index % length(local.floating_ip_dns)]
-  value   = "${hcloud_floating_ip.floating_ip[count.index % length(hcloud_floating_ip.floating_ip)].ip_address}1"
+  value   = "${local.hcloud_floating_ip[count.index % length(local.floating_ipv6_list)].ip_address}1"
   type    = "AAAA"
   ttl     = (local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy
