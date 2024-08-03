@@ -10,11 +10,12 @@
 
 # Filename: locals.tf
 # Description: 
-# Version: 1.7.0
+# Version: 1.7.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
 # Last Modified: 2024-08-03
 # Changelog: 
+# 1.7.1 - Fix wrong map
 # 1.7.0 - Add map for floating ips
 # 1.6.0 - Remove local.hcloud_floating_ips
 # 1.5.1 - Add floating_ipv4_dns and floating_ipv6_dns
@@ -61,11 +62,11 @@ locals {
   ])))
 
   floating_ipv4_map = {
-    for floating_ip in var.floating_ips : floating_ip.dns => floating_ip if lower(floating_ip.type) == "ipv4"
+    for key, value in var.floating_ips : key => value if lower(value.type) == "ipv4"
   }
 
   floating_ipv6_map = {
-    for floating_ip in var.floating_ips : floating_ip.dns => floating_ip if lower(floating_ip.type) == "ipv6"
+    for key, value in var.floating_ips : key => value if lower(value.type) == "ipv6"
   }
 
   floating_ipv4_list = [
