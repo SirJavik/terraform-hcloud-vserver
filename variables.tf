@@ -10,11 +10,12 @@
 
 # Filename: variables.tf
 # Description: 
-# Version: 1.4.0
+# Version: 1.4.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
 # Last Modified: 2024-08-20
 # Changelog: 
+# 1.4.1 - Change type to map
 # 1.4.0 - Add proxy variable to additional_names
 # 1.3.0 - Add keep_disk variable, cloud_init variable, add_index variable
 # 1.2.0 - Changed dns in floating_ip to list
@@ -139,10 +140,10 @@ variable "firewall_rules" {
 
 variable "additional_names" {
   description = "Additional names for the vserver"
-  type = list(object({
+  type = map(object({
     proxy = optional(bool, true)
   }))
-  default = []
+  default = {}
 }
 
 variable "cloudflare_zones" {
