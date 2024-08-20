@@ -10,11 +10,12 @@
 
 # Filename: additional_names.tf
 # Description: 
-# Version: 1.0.0
+# Version: 1.1.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-07-20
-# Last Modified: 2024-07-20
+# Last Modified: 2024-08-20
 # Changelog: 
+# 1.1.0 - Add proxy option for additional names
 # 1.0.0 - Initial version 
 
 ###################
@@ -22,7 +23,7 @@
 ###################
 
 resource "terraform_data" "additional_names_split" {
-  for_each = toset(var.additional_names)
+  for_each = toset(local.additional_names)
 
   triggers_replace = {
     parts = split(".", each.key)
@@ -30,7 +31,7 @@ resource "terraform_data" "additional_names_split" {
 }
 
 resource "terraform_data" "additional_names_parts" {
-  for_each = toset(var.additional_names)
+  for_each = toset(local.additional_names)
 
   triggers_replace = {
     fulldomain      = each.key
@@ -51,10 +52,10 @@ resource "cloudflare_record" "additional_names_dns_cname" {
       ]
     ].triggers_replace.domain_with_tld
   ]
-  name    = var.additional_names[count.index % length(var.additional_names)]
+  name    = local.additional_names[count.index % length(var.additional_names)]
   value   = hcloud_server.vserver[count.index % var.service_count].name
   type    = "CNAME"
   ttl     = var.cloudflare_proxied_ttl
-  proxied = true
+  proxied = var.additional_names[count.index % length(var.additional_names)].proxy
   comment = "Managed by Terraform"
 }

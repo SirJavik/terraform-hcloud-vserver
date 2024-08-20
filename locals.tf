@@ -10,11 +10,12 @@
 
 # Filename: locals.tf
 # Description: 
-# Version: 1.7.2
+# Version: 1.8.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
-# Last Modified: 2024-08-03
+# Last Modified: 2024-08-20
 # Changelog: 
+# 1.8.0 - Add local additional_names
 # 1.7.1 - Fix wrong map
 # 1.7.0 - Add map for floating ips
 # 1.6.0 - Remove local.hcloud_floating_ips
@@ -100,5 +101,9 @@ locals {
 
   cloudflare_zone_list = [
     for zone in var.cloudflare_zones : zone
+  ]
+
+  additional_names = [
+    for key, value in var.additional_names : key
   ]
 }
