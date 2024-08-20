@@ -10,11 +10,12 @@
 
 # Filename: additional_names.tf
 # Description: 
-# Version: 1.1.1
+# Version: 1.1.2
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-07-20
 # Last Modified: 2024-08-20
 # Changelog: 
+# 1.1.2 - Fix additional_names_dns_cname
 # 1.1.1 - Fix ttl
 # 1.1.0 - Add proxy option for additional names
 # 1.0.0 - Initial version 
@@ -25,7 +26,6 @@
 
 resource "terraform_data" "additional_names_split" {
   for_each = toset(local.additional_names_list)
-
   triggers_replace = {
     parts = split(".", each.key)
   }
@@ -52,7 +52,7 @@ resource "terraform_data" "additional_names_parts" {
 ###################
 
 resource "cloudflare_record" "additional_names_dns_cname" {
-  count = length(local.additional_names_list) * var.service_count
+  count = length(var.additional_names) * var.service_count
 
   zone_id = var.cloudflare_zones[
     terraform_data.additional_names_parts[
@@ -64,7 +64,7 @@ resource "cloudflare_record" "additional_names_dns_cname" {
   name    = local.additional_names_list[count.index % length(local.additional_names_list)]
   value   = hcloud_server.vserver[count.index % var.service_count].name
   type    = "CNAME"
-  ttl     = (local.additional_names_list[count.index % length(local.additional_names_list)].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
-  proxied = local.additional_names_list[count.index % length(local.additional_names_list)].proxy
+  ttl     = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
+  proxied = var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy
   comment = "Managed by Terraform"
 }
