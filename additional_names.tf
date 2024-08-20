@@ -10,11 +10,12 @@
 
 # Filename: additional_names.tf
 # Description: 
-# Version: 1.1.0
+# Version: 1.1.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-07-20
 # Last Modified: 2024-08-20
 # Changelog: 
+# 1.1.1 - Fix ttl
 # 1.1.0 - Add proxy option for additional names
 # 1.0.0 - Initial version 
 
@@ -55,7 +56,7 @@ resource "cloudflare_record" "additional_names_dns_cname" {
   name    = local.additional_names[count.index % length(var.additional_names)]
   value   = hcloud_server.vserver[count.index % var.service_count].name
   type    = "CNAME"
-  ttl     = var.cloudflare_proxied_ttl
+  ttl     = (var.additional_names[count.index % length(var.additional_names)].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = var.additional_names[count.index % length(var.additional_names)].proxy
   comment = "Managed by Terraform"
 }
