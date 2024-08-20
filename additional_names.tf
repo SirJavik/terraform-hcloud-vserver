@@ -20,19 +20,23 @@
 # 1.0.0 - Initial version 
 
 ###################
-###     DNS     ###
+###    Split    ###
 ###################
 
 resource "terraform_data" "additional_names_split" {
-  for_each = toset(local.additional_names)
+  for_each = toset(local.additional_names_dns)
 
   triggers_replace = {
     parts = split(".", each.key)
   }
 }
 
+###################
+###    Domain   ###
+###################
+
 resource "terraform_data" "additional_names_parts" {
-  for_each = toset(local.additional_names)
+  for_each = toset(local.additional_names_dns)
 
   triggers_replace = {
     fulldomain      = each.key
@@ -43,20 +47,24 @@ resource "terraform_data" "additional_names_parts" {
   }
 }
 
+###################
+###     DNS     ###
+###################
+
 resource "cloudflare_record" "additional_names_dns_cname" {
-  count = length(var.additional_names) * var.service_count
+  count = length(local.additional_names_list) * var.service_count
 
   zone_id = var.cloudflare_zones[
     terraform_data.additional_names_parts[
-      var.additional_names[
-        count.index % length(var.additional_names)
+      local.additional_names_dns[
+        count.index % length(local.additional_names_list)
       ]
     ].triggers_replace.domain_with_tld
   ]
-  name    = local.additional_names[count.index % length(var.additional_names)]
+  name    = local.additional_names_list[count.index % length(local.additional_names_list)]
   value   = hcloud_server.vserver[count.index % var.service_count].name
   type    = "CNAME"
-  ttl     = (var.additional_names[count.index % length(var.additional_names)].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
-  proxied = var.additional_names[count.index % length(var.additional_names)].proxy
+  ttl     = (local.additional_names_list[count.index % length(local.additional_names_list)].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
+  proxied = local.additional_names_list[count.index % length(local.additional_names_list)].proxy
   comment = "Managed by Terraform"
 }

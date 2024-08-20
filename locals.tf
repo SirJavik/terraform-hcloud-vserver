@@ -78,6 +78,15 @@ locals {
     for floating_ip in hcloud_floating_ip.floating_ipv6 : floating_ip
   ]))
 
+  additional_names_dns = distinct(flatten(tolist([
+    for additional_name in var.additional_names : [for dns in additional_name.dns : dns]
+  ])))
+
+  additional_names_list = [
+    for additional_name in var.additional_names : {
+      proxy = try(additional_name.proxy, false)
+    }
+  ]
 
   floating_ipv4_list = [
     for floating_ip in var.floating_ips : {
@@ -101,9 +110,5 @@ locals {
 
   cloudflare_zone_list = [
     for zone in var.cloudflare_zones : zone
-  ]
-
-  additional_names = [
-    for key, value in var.additional_names : key
   ]
 }
