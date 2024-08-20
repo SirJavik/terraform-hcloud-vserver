@@ -24,7 +24,7 @@
 ###################
 
 resource "terraform_data" "additional_names_split" {
-  for_each = toset(local.additional_names_dns)
+  for_each = toset(local.additional_names_list)
 
   triggers_replace = {
     parts = split(".", each.key)
@@ -36,7 +36,7 @@ resource "terraform_data" "additional_names_split" {
 ###################
 
 resource "terraform_data" "additional_names_parts" {
-  for_each = toset(local.additional_names_dns)
+  for_each = toset(local.additional_names_list)
 
   triggers_replace = {
     fulldomain      = each.key
@@ -56,7 +56,7 @@ resource "cloudflare_record" "additional_names_dns_cname" {
 
   zone_id = var.cloudflare_zones[
     terraform_data.additional_names_parts[
-      local.additional_names_dns[
+      local.additional_names_list[
         count.index % length(local.additional_names_list)
       ]
     ].triggers_replace.domain_with_tld
