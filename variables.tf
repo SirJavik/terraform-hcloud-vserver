@@ -10,11 +10,12 @@
 
 # Filename: variables.tf
 # Description: 
-# Version: 1.4.1
+# Version: 1.4.2
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
 # Last Modified: 2024-08-20
 # Changelog: 
+# 1.4.2 - Add override variable to additional_names
 # 1.4.1 - Change type to map
 # 1.4.0 - Add proxy variable to additional_names
 # 1.3.0 - Add keep_disk variable, cloud_init variable, add_index variable
@@ -141,7 +142,8 @@ variable "firewall_rules" {
 variable "additional_names" {
   description = "Additional names for the vserver"
   type = map(object({
-    proxy = optional(bool, true)
+    proxy    = optional(bool, true)
+    override = optional(bool, false)
   }))
   default = {}
 }

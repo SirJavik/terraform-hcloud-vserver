@@ -10,11 +10,12 @@
 
 # Filename: additional_names.tf
 # Description: 
-# Version: 1.1.2
+# Version: 1.1.3
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-07-20
 # Last Modified: 2024-08-20
 # Changelog: 
+# 1.1.3 - Add overwrite option
 # 1.1.2 - Fix additional_names_dns_cname
 # 1.1.1 - Fix ttl
 # 1.1.0 - Add proxy option for additional names
@@ -61,10 +62,11 @@ resource "cloudflare_record" "additional_names_dns_cname" {
       ]
     ].triggers_replace.domain_with_tld
   ]
-  name    = local.additional_names_list[count.index % length(local.additional_names_list)]
-  value   = hcloud_server.vserver[count.index % var.service_count].name
-  type    = "CNAME"
-  ttl     = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
-  proxied = var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy
-  comment = "Managed by Terraform"
+  name            = local.additional_names_list[count.index % length(local.additional_names_list)]
+  value           = hcloud_server.vserver[count.index % var.service_count].name
+  type            = "CNAME"
+  ttl             = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
+  proxied         = var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy
+  allow_overwrite = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].allow_overwrite ? true : false)
+  comment         = "Managed by Terraform"
 }
