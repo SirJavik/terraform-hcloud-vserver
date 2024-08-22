@@ -67,6 +67,6 @@ resource "cloudflare_record" "additional_names_dns_cname" {
   type            = "CNAME"
   ttl             = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied         = var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].proxy
-  allow_overwrite = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].allow_overwrite ? true : false)
+  allow_overwrite = (var.additional_names[local.additional_names_list[count.index % length(local.additional_names_list)]].override ? true : false)
   comment         = "Managed by Terraform"
 }
