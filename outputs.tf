@@ -10,18 +10,19 @@
 
 # Filename: outputs.tf
 # Description: 
-# Version: 1.0
+# Version: 1.1
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
-# Last Modified: 2024-04-25
+# Last Modified: 2024-08-22
 # Changelog: 
+# 1.1 - Disable volumes output
 # 1.0 - Initial version 
 
 output "server" {
   value = local.server
 }
 
-output "volumes" {
-  value = {
-  for volume in hcloud_volume.volume : volume.name => volume }
-}
+#output "volumes" {
+#  value = {
+#  for volume in hcloud_volume.volume : volume.name => volume }
+#}
