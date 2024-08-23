@@ -19,13 +19,13 @@
 # 1.0 - Initial version 
 
 resource "random_integer" "vol_suffix" {
-  count = length(var.volumes) * length(local.server_list)
+  count = length(local.volumes_list) * length(local.server_list)
   min   = 1000
   max   = 9999
 }
 
 resource "hcloud_volume" "volume" {
-  count = length(var.volumes) * length(local.server_list)
+  count = length(local.volumes_list) * length(local.server_list)
 
   name = format("%s-%s-%d",
     local.server_list[count.index % length(local.server_list)].name,
