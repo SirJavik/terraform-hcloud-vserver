@@ -10,11 +10,12 @@
 
 # Filename: main.tf
 # Description: 
-# Version: 1.0.1
+# Version: 1.1.0
 # Author: Benjamin Schneider <ich@benjamin-schneider.com>
 # Date: 2024-04-25
-# Last Modified: 2024-07-28
+# Last Modified: 2025-04-07S
 # Changelog: 
+# 1.1.0 - Add rebuild_protection and delete_protection, add backups
 # 1.0.1 - Add keep_disk variable, cloud_init variable, add_index variable
 # 1.0.0 - Initial version 
 
@@ -42,6 +43,11 @@ resource "hcloud_server" "vserver" {
   location    = (count.index % 2 == 0 ? var.locations[0] : var.locations[1])
   ssh_keys    = var.ssh_key_ids
   user_data   = file("${path.module}/cloud-init.yml")
+
+  rebuild_protection = var.protected
+  delete_protection = var.protected
+
+  backups = var.backups
 
   public_net {
     ipv4 = hcloud_primary_ip.ipv4[count.index].id

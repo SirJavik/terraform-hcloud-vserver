@@ -29,6 +29,18 @@ variable "environment" {
   default     = "live"
 }
 
+variable "protected" {
+  description = "The protected flag of the vserver"
+  type        = bool
+  default     = false
+}
+
+variable "backups" {
+  description = "The backups flag of the vserver"
+  type        = bool
+  default     = false
+}
+
 variable "service_count" {
   description = "The number of vserver to create"
   type        = number
