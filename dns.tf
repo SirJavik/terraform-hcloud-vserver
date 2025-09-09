@@ -71,3 +71,92 @@ resource "cloudflare_record" "txt_dns" {
   ttl     = var.cloudflare_ttl
   comment = "Managed by Terraform"
 }
+
+# CAA Records
+resource "cloudflare_record" "caa_google_trust" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = each.value.name
+  value   = "0 issue \"pki.goog\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_wild_google_trust" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = "*." + each.value.name
+  value   = "0 issue \"pki.goog\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_letsencrypt" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = each.value.name
+  value   = "0 issue \"letsencrypt.org\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_wild_letsencrypt" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = "*." + each.value.name
+  value   = "0 issue \"letsencrypt.org\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_ssl" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = each.value.name
+  value   = "0 issue \"ssl.com\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_wild_ssl" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = "*." + each.value.name
+  value   = "0 issue \"ssl.com\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_sectigo" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = each.value.name
+  value   = "0 issue \"sectigo.com\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
+
+resource "cloudflare_record" "caa_wild_sectigo" {
+  for_each = local.servers
+
+  zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
+  name    = "*." + each.value.name
+  value   = "0 issue \"sectigo.com\""
+  type    = "CAA"
+  ttl     = var.cloudflare_ttl
+  comment = "Managed by Terraform"
+}
