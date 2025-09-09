@@ -32,6 +32,7 @@ resource "terraform_data" "domain_data" {
   triggers_replace = {
     fqdn            = each.value.name
     tld             = try(element(terraform_data.server_name[each.key].triggers_replace.parts, length(terraform_data.server_name[each.key].triggers_replace.parts) - 1), null)
+    wild_with_tld   = try(join(".", ["*.", element(terraform_data.server_name[each.key].triggers_replace.parts, length(terraform_data.server_name[each.key].triggers_replace.parts) - 2), element(terraform_data.server_name[each.key].triggers_replace.parts, length(terraform_data.server_name[each.key].triggers_replace.parts) - 1)]), null)
     domain          = try(element(terraform_data.server_name[each.key].triggers_replace.parts, length(terraform_data.server_name[each.key].triggers_replace.parts) - 2), null)
     subdomain       = try(element(terraform_data.server_name[each.key].triggers_replace.parts, length(terraform_data.server_name[each.key].triggers_replace.parts) - 3), null)
     host            = try(element(terraform_data.server_name[each.key].triggers_replace.parts, 0), null)
@@ -77,7 +78,7 @@ resource "cloudflare_record" "caa_google_trust" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = each.value.name
+  name    = try(lookup(terraform_data.domain_data[each.key].triggers_replace, "domain_with_tld"), "@")
   value   = "0 issue \"pki.goog\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -88,7 +89,7 @@ resource "cloudflare_record" "caa_wild_google_trust" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = "*." + each.value.name
+  name    = "*." + try(lookup(terraform_data.domain_data[each.key].triggers_replace, "wild_with_tld"), "*")
   value   = "0 issue \"pki.goog\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -99,7 +100,7 @@ resource "cloudflare_record" "caa_letsencrypt" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = each.value.name
+  name    = try(lookup(terraform_data.domain_data[each.key].triggers_replace, "domain_with_tld"), "@")
   value   = "0 issue \"letsencrypt.org\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -110,7 +111,7 @@ resource "cloudflare_record" "caa_wild_letsencrypt" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = "*." + each.value.name
+  name    = "*." + try(lookup(terraform_data.domain_data[each.key].triggers_replace, "wild_with_tld"), "*")
   value   = "0 issue \"letsencrypt.org\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -121,7 +122,7 @@ resource "cloudflare_record" "caa_ssl" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = each.value.name
+  name    = try(lookup(terraform_data.domain_data[each.key].triggers_replace, "domain_with_tld"), "@")
   value   = "0 issue \"ssl.com\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -132,7 +133,7 @@ resource "cloudflare_record" "caa_wild_ssl" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = "*." + each.value.name
+  name    = "*." + try(lookup(terraform_data.domain_data[each.key].triggers_replace, "wild_with_tld"), "*")
   value   = "0 issue \"ssl.com\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -143,7 +144,7 @@ resource "cloudflare_record" "caa_sectigo" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = each.value.name
+  name    = try(lookup(terraform_data.domain_data[each.key].triggers_replace, "domain_with_tld"), "@")
   value   = "0 issue \"sectigo.com\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
@@ -154,7 +155,7 @@ resource "cloudflare_record" "caa_wild_sectigo" {
   for_each = local.servers
 
   zone_id = var.cloudflare_zones[terraform_data.domain_data[each.key].triggers_replace.domain_with_tld]
-  name    = "*." + each.value.name
+  name    = "*." + try(lookup(terraform_data.domain_data[each.key].triggers_replace, "wild_with_tld"), "*")
   value   = "0 issue \"sectigo.com\""
   type    = "CAA"
   ttl     = var.cloudflare_ttl
