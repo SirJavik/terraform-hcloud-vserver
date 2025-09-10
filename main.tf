@@ -45,7 +45,7 @@ resource "hcloud_server" "vserver" {
   user_data   = file("${path.module}/cloud-init.yml")
 
   rebuild_protection = var.protected
-  delete_protection = var.protected
+  delete_protection  = var.protected
 
   backups = var.backups
 

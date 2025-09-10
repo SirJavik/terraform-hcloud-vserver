@@ -143,7 +143,7 @@ resource "hcloud_rdns" "floating_ipv6_rdns" {
 ###     DNS     ###
 ###################
 
-resource "cloudflare_record" "floating_ipv4_dns" {
+resource "cloudflare_dns_record" "floating_ipv4_dns" {
   count = length(local.floating_ipv4_list) * length(local.floating_ipv4_dns)
 
   zone_id = var.cloudflare_zones[
@@ -154,14 +154,14 @@ resource "cloudflare_record" "floating_ipv4_dns" {
     ].triggers_replace.domain_with_tld
   ]
   name    = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].dns[count.index % length(local.floating_ipv4_dns)]
-  value   = local.hcloud_floating_ipv4[count.index % length(local.floating_ipv4_list)].ip_address
+  content = local.hcloud_floating_ipv4[count.index % length(local.floating_ipv4_list)].ip_address
   type    = "A"
   ttl     = (local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv4_list[count.index % length(local.floating_ipv4_list)].proxy
   comment = "Managed by Terraform"
 }
 
-resource "cloudflare_record" "floating_ipv6_dns" {
+resource "cloudflare_dns_record" "floating_ipv6_dns" {
   count = length(local.floating_ipv6_list) * length(local.floating_ipv6_dns)
 
   zone_id = var.cloudflare_zones[
@@ -172,7 +172,7 @@ resource "cloudflare_record" "floating_ipv6_dns" {
     ].triggers_replace.domain_with_tld
   ]
   name    = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].dns[count.index % length(local.floating_ipv6_dns)]
-  value   = "${local.hcloud_floating_ipv6[count.index % length(local.floating_ipv6_list)].ip_address}1"
+  content = "${local.hcloud_floating_ipv6[count.index % length(local.floating_ipv6_list)].ip_address}1"
   type    = "AAAA"
   ttl     = (local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy == true ? var.cloudflare_proxied_ttl : var.cloudflare_ttl)
   proxied = local.floating_ipv6_list[count.index % length(local.floating_ipv6_list)].proxy
